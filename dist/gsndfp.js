@@ -225,7 +225,7 @@
       if (self.isDebug) {
         self.log(JSON.stringify(payLoad));
       }
-      if ((lastRefreshTime === 0) || (new Date).getSeconds() - lastRefreshTime.getSeconds() >= self.minSecondBetweenRefresh) {
+      if (lastRefreshTime <= 0 || ((new Date).getTime() / 1000 - lastRefreshTime) >= self.minSecondBetweenRefresh) {
         $.gsnDfp({
           dfpID: self.gsnNetworkId,
           setTargeting: {
@@ -233,7 +233,7 @@
           },
           enableSingleRequest: false
         });
-        lastRefreshTime = new Date();
+        lastRefreshTime = (new Date()).getTime() / 1000;
       }
       return self;
     },
