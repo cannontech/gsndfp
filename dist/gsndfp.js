@@ -22,8 +22,9 @@
  * The following events are currently available: clickProduct, clickPromotion, clickBrand, clickBrickOffer, clickRecipe, and clickLink
  */
 (function($, oldGsn, win, doc, gsnContext) {
-  var Plugin, buildQueryString, createFrame, myGsn, myParent$, myPlugin, oldGsnAdvertising, parent$, sessionStorageX, tickerFrame;
+  var Plugin, buildQueryString, createFrame, lastRefreshTime, myGsn, myParent$, myPlugin, oldGsnAdvertising, parent$, sessionStorageX, tickerFrame;
   sessionStorageX = win.sessionStorage;
+  lastRefreshTime = 0;
   if (typeof sessionStorageX === 'undefined') {
     sessionStorageX = {
       getItem: function() {},
@@ -70,6 +71,7 @@
     onAllEvents: null,
     oldGsnAdvertising: oldGsnAdvertising,
     isDebug: false,
+    minSecondBetweenRefresh: 2,
     trigger: function(eventName, eventData) {
       if (eventName.indexOf('gsnevent') < 0) {
         eventName = 'gsnevent:' + eventName;
@@ -223,13 +225,16 @@
       if (self.isDebug) {
         self.log(JSON.stringify(payLoad));
       }
-      $.gsnDfp({
-        dfpID: self.gsnNetworkId,
-        setTargeting: {
-          brand: self.getBrand()
-        },
-        enableSingleRequest: false
-      });
+      if ((lastRefreshTime === 0) || (new Date).getSeconds() - lastRefreshTime.getSeconds() >= self.minSecondBetweenRefresh) {
+        $.gsnDfp({
+          dfpID: self.gsnNetworkId,
+          setTargeting: {
+            brand: self.getBrand()
+          },
+          enableSingleRequest: false
+        });
+        lastRefreshTime = new Date();
+      }
       return self;
     },
     setDefault: function(defaultParam) {
@@ -399,7 +404,7 @@
 
 (function($, window) {
   'use strict';
-  var $adCollection, count, createAds, dfpBlocked, dfpID, dfpIsLoaded, dfpLoader, dfpOptions, dfpScript, dfpSelector, displayAds, getDimensions, getID, init, isInView, lastRefreshTime, refreshHandler, rendered, sessionStorageX, setOptions, storeAs;
+  var $adCollection, count, createAds, dfpBlocked, dfpID, dfpIsLoaded, dfpLoader, dfpOptions, dfpScript, dfpSelector, displayAds, getDimensions, getID, init, isInView, rendered, sessionStorageX, setOptions, storeAs;
   sessionStorageX = sessionStorage;
   if (typeof sessionStorageX === 'undefined') {
     sessionStorageX = {
@@ -416,7 +421,6 @@
   dfpIsLoaded = false;
   $adCollection = void 0;
   storeAs = 'gsnUnit';
-  lastRefreshTime = new Date;
   init = function(id, selector, options) {
     dfpID = id;
     $adCollection = $(selector);
@@ -425,7 +429,6 @@
     $(function() {
       createAds();
       displayAds();
-      $('body').on('click', dfpOptions.refreshTarget, refreshHandler);
     });
   };
   setOptions = function(options) {
@@ -439,9 +442,7 @@
       disablePublisherConsole: false,
       disableInitialLoad: false,
       inViewOnly: false,
-      noFetch: false,
-      refreshTarget: '.gsnunit-refresh-target',
-      minSecondBetweenRefresh: 5
+      noFetch: false
     };
     $.extend(true, dfpOptions, options);
     if (dfpOptions.googletag) {
@@ -570,12 +571,6 @@
     elemTop = elem.offset().top;
     elemBottom = elemTop + elem.height();
     return elemTop + (elemBottom - elemTop) / 2 >= docViewTop && elemTop + (elemBottom - elemTop) / 2 <= docViewBottom;
-  };
-  refreshHandler = function() {
-    if ((new Date).getSeconds() - lastRefreshTime.getSeconds() >= dfpOptions.minSecondBetweenRefresh) {
-      Gsn.Advertising.refreshAdPods();
-      lastRefreshTime = new Date;
-    }
   };
   displayAds = function() {
     var toPush;

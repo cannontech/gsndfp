@@ -17,6 +17,7 @@
 # scripts and/or other plugins which may not be closed properly.
 (($, oldGsn, win, doc, gsnContext) ->
   sessionStorageX = win.sessionStorage
+  lastRefreshTime = 0
   
   if typeof sessionStorageX == 'undefined'
     sessionStorageX =
@@ -84,6 +85,7 @@
     onAllEvents: null     
     oldGsnAdvertising: oldGsnAdvertising
     isDebug: false
+    minSecondBetweenRefresh: 2
     trigger: (eventName, eventData) ->
       if eventName.indexOf('gsnevent') < 0
         eventName = 'gsnevent:' + eventName
@@ -221,11 +223,13 @@
       
       # track payload
       if self.isDebug then self.log JSON.stringify payLoad
-      
-      $.gsnDfp
-        dfpID: self.gsnNetworkId
-        setTargeting: brand: self.getBrand()
-        enableSingleRequest: false                              
+      if (lastRefreshTime == 0) || (new Date).getSeconds() - lastRefreshTime.getSeconds() >= self.minSecondBetweenRefresh
+        $.gsnDfp
+          dfpID: self.gsnNetworkId
+          setTargeting: brand: self.getBrand()
+          enableSingleRequest: false 
+        lastRefreshTime = new Date()
+        
       return self
       
     setDefault: (defaultParam) ->

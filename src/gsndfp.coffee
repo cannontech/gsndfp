@@ -19,7 +19,6 @@
   dfpIsLoaded = false
   $adCollection = undefined
   storeAs = 'gsnUnit'
-  lastRefreshTime = new Date
 
   init = (id, selector, options) ->
     dfpID = id
@@ -29,8 +28,6 @@
     $ ->
       createAds()
       displayAds()
-      $('body').on 'click', dfpOptions.refreshTarget, refreshHandler
-      #not sure where this should go
       return
     return
 
@@ -47,8 +44,6 @@
       disableInitialLoad: false
       inViewOnly: false
       noFetch: false
-      refreshTarget: '.gsnunit-refresh-target'
-      minSecondBetweenRefresh: 5
     # Merge options objects
     $.extend true, dfpOptions, options
     # If a custom googletag is specified, use it.
@@ -172,12 +167,6 @@
     elemBottom = elemTop + elem.height()
     #Is more than half of the element visible
     elemTop + (elemBottom - elemTop) / 2 >= docViewTop and elemTop + (elemBottom - elemTop) / 2 <= docViewBottom
-
-  refreshHandler = ->
-    if (new Date).getSeconds() - lastRefreshTime.getSeconds() >= dfpOptions.minSecondBetweenRefresh
-      Gsn.Advertising.refreshAdPods()
-      lastRefreshTime = new Date
-    return
 
   displayAds = ->
     toPush = []
