@@ -244,15 +244,13 @@
       self.gsnNetworkId = gsnNetworkId;
       self.isDebug = isDebug;
       refreshAdPods = self.refreshAdPods;
-      $(document).ready(function() {
-        $(liveDiv || 'body').on('click', '.gsnaction', self.actionHandler);
-        $.gsnSw2({
-          chainId: chainId,
-          dfpID: gsnNetworkId,
-          displayWhenExists: '.gsnunit',
-          enableSingleRequest: false,
-          onClose: refreshAdPods
-        });
+      $(liveDiv || 'body').on('click', '.gsnaction', self.actionHandler);
+      $.gsnSw2({
+        chainId: chainId,
+        dfpID: gsnNetworkId,
+        displayWhenExists: '.gsnunit',
+        enableSingleRequest: false,
+        onClose: refreshAdPods
       });
       return self;
     }
@@ -351,7 +349,12 @@
     });
   }
   if (win.top) {
-    myParent$ = win.top.jQuery || win.top.Zepto || win.top.tire;
+    myParent$ = null;
+    try {
+      myParent$ = win.top.$;
+    } catch (_error) {
+      myParent$ = win.parent.$;
+    }
     if (myParent$ !== $) {
       parent$ = myParent$;
     }

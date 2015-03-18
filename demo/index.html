@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width">
   </head>
   <body>
-    <h1 class="gsnaction" data-gsnevtname="title click" data-gsndept="health">gsnDfp examples - click to refresh</h1>
+    <h1 class="gsnaction" data-gsn-evtname="title click" data-gsn-dept="health">gsnDfp examples - click to refresh</h1>
     <div class="gsnunit" data-dimensions="728x90"></div>
     <div class="gsnunit" data-dimensions="300x250"></div>
     <div class="gsnunit" data-dimensions="160x600"></div>
@@ -22,8 +22,10 @@
       });
       
       (function($){
-        Gsn.Advertising.load(338, '/6394/shoptocook.299.shursavemarkets', true);
-        Gsn.Advertising.setDefault({storeid: '123', deviceid: '1', page: 'circular'});
+        $(document).ready(function() {
+          Gsn.Advertising.setDefault({storeid: '123', deviceid: '1', page: 'circular'});
+          Gsn.Advertising.load(338, '/6394/shoptocook.299.shursavemarkets', true);
+        });
       })(window.jQuery);
     </script>
   </body>

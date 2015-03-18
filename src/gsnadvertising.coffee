@@ -238,18 +238,15 @@
       self.gsnNetworkId = gsnNetworkId
       self.isDebug = isDebug
       refreshAdPods = self.refreshAdPods
-      $(document).ready ->
-        $(liveDiv or 'body').on 'click', '.gsnaction', self.actionHandler
-        $.gsnSw2
-          chainId: chainId
-          dfpID: gsnNetworkId
-          displayWhenExists: '.gsnunit'
-          enableSingleRequest: false
-          onClose: refreshAdPods
-        return                  
-                  
+      $(liveDiv or 'body').on 'click', '.gsnaction', self.actionHandler
+      $.gsnSw2
+        chainId: chainId
+        dfpID: gsnNetworkId
+        displayWhenExists: '.gsnunit'
+        enableSingleRequest: false
+        onClose: refreshAdPods        
       return self
-      
+
   # #endregion
   # create the plugin and map function for backward compatibility 
   myPlugin = new Plugin
@@ -344,7 +341,12 @@
   # allow event to be pass to anybody listening on the parent
   if win.top
     # this should match the initialization entry below
-    myParent$ = win.top.jQuery or win.top.Zepto or win.top.tire
+    myParent$ = null
+    try
+      myParent$ = win.top.$
+    catch
+      myParent$ = win.parent.$
+    
     if myParent$ != $
       parent$ = myParent$
   return
