@@ -28,7 +28,7 @@ gulp.task('clean', function() {
 });
 
 gulp.task('coffee', function() {
-  return gulp.src('./src/*.coffee')
+  return gulp.src(['./src/circplus.coffee','./src/gsndfp.coffee','./src/gsnsw2.coffee','./src/jquery.easymodal.coffee', './src/gsnadvertising.coffee'])
     .pipe(concat('gsndfp.coffee'))
     .pipe(coffee({bare: true}).on('error', gutil.log))
     .pipe(header(banner, {pkg: pkg}))

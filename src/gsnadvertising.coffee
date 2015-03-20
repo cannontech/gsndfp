@@ -47,11 +47,11 @@
     defaultActionParam:
       # default action parameters *optional* means it will not break but we would want it if possible 
        # required - example: registration, coupon, circular
-      page: ''     
+      page: undefined    
        # required - specific action/event/behavior name (prev circular, next circular)  
       evtname: ''    
        # optional* - string identifying the department                                                     
-      dept: ''            
+      dept: undefined          
       # -- Device Data --  
        # optional* - kios, terminal, or device Id
        # if deviceid is not unique, then the combination of storeid and deviceid should be unique 
@@ -80,12 +80,24 @@
       evtvalue: 0
       # additional parameters TBD
     data: {}         
-    gsnNetworkId: '/6394/digitalstore.test'
-    chainId: 0,
-    onAllEvents: null     
-    oldGsnAdvertising: oldGsnAdvertising
     isDebug: false
-    minSecondBetweenRefresh: 2
+    gsnid: 0      
+    selector: 'body'
+    apiUrl: 'https://clientapi.gsn2.com/api/v1'
+    gsnNetworkId: '/6394/digitalstore.test'
+    gsnNetworkStore: undefined
+    onAllEvents: undefined     
+    oldGsnAdvertising: oldGsnAdvertising
+    minSecondBetweenRefresh: 5
+    enableCircPlus: false
+    disablesw: false
+    isLoading: false
+    targetting: {}
+    depts: []
+    circPlusBody: undefined
+    refreshExisting: 
+      circPlus: false
+      pods: false
     trigger: (eventName, eventData) ->
       if eventName.indexOf('gsnevent') < 0
         eventName = 'gsnevent:' + eventName
@@ -121,6 +133,30 @@
         console.log message
         
       return this
+      
+    cleanKeyword: (keyword) ->
+      result = keyword.replace(/[^a-zA-Z0-9]+/gi, '_').replace(/^[_]+/gi, '')
+      if result.toLowerCase?
+        result = result.toLowerCase()
+      result
+      
+    addDept: (dept) ->
+      self =  myGsn.Advertising
+      if (dept)
+        oldDepts = self.depts
+        depts = []
+        goodDepts = {}                 
+        depts.unshift self.cleanKeyword dept
+        for dept in oldDepts
+          if (goodDepts[dept]?)
+            depts.push dept
+          goodDepts[dept] = 1
+      
+        while depts.length > 5
+          depts.pop()
+        
+        self.depts = depts
+
     ajaxFireUrl: (url, sync) ->
       #/ <summary>Hit a URL.  Good for click and impression tracking</summary> 
       if typeof url == 'string'
@@ -214,41 +250,79 @@
         return
       self.refreshAdPods payLoad
       return self
-      
-    refreshAdPods: (actionParam) ->
+
+    refreshAdPods: (actionParam, forceRefresh) ->
       self = myGsn.Advertising
       payLoad = {}
       $.extend payLoad, self.defaultActionParam
-      $.extend payLoad, actionParam
       
-      # track payload
+      if (actionParam)
+        $.extend payLoad, actionParam
+      
+      # track payLoad
       if self.isDebug then self.log JSON.stringify payLoad
-      if (lastRefreshTime <= 0 || ( (new Date).getTime() / 1000 - lastRefreshTime) >= self.minSecondBetweenRefresh)
-        $.gsnDfp
-          dfpID: self.gsnNetworkId
-          setTargeting: brand: self.getBrand()
-          enableSingleRequest: false 
+      canRefresh = lastRefreshTime <= 0 || ( (new Date).getTime() / 1000 - lastRefreshTime) >= self.minSecondBetweenRefresh
+      
+      if (forceRefresh || canRefresh)                                            
         lastRefreshTime = (new Date()).getTime() / 1000;
+        self.addDept payLoad.dept
+          
+        targetting = 
+          dept: self.depts or []
+          brand: self.getBrand()
+
+        if payLoad.page
+          targetting.kw = payLoad.page.replace(/[^a-z]/gi, '');
+      
+        $.gsnDfp
+          dfpID: self.gsnNetworkId.replace(/\/$/gi, '') + (self.gsnNetworkStore or '')
+          setTargeting: targetting
+          refreshExisting: self.refreshExisting.pods
+        self.refreshExisting.pods = true
+        
+        if self.enableCircPlus
+          targetting.depts = [] unless targetting.depts
+          if targetting.depts.length <= 0
+             targetting.depts = ['produce']
+             
+          $.circPlus       
+            dfpID: self.gsnNetworkId.replace(/\/$/gi, '') + (self.gsnNetworkStore or '')
+            setTargeting: targetting
+            circPlusBody: self.circPlusBody
+            refreshExisting: self.refreshExisting.circPlus
+          self.refreshExisting.circPlus = true
+     
         
       return self
       
     setDefault: (defaultParam) ->
       self = this                     
       $.extend self.defaultActionParam, defaultParam
+    
+    load: (gsnid, isDebug) ->  
+      self = myGsn.Advertising    
+      if (gsnid)
+        self.gsnid = gsnid
+        self.isDebug = isDebug unless self.isDebug  
+        
+      if (self.isLoading) then return self 
+      if ($('.gsnadunit,.gsnunit').length <= 0) then return self
       
-    load: (chainId, gsnNetworkId, isDebug, liveDiv) ->               
-      self = this;    
-      self.chainId = chainId
-      self.gsnNetworkId = gsnNetworkId
-      self.isDebug = isDebug
-      refreshAdPods = self.refreshAdPods
-      $(liveDiv or 'body').on 'click', '.gsnaction', self.actionHandler
-      $.gsnSw2
-        chainId: chainId
-        dfpID: gsnNetworkId
-        displayWhenExists: '.gsnunit'
-        enableSingleRequest: false
-        onClose: refreshAdPods        
+      if (self.gsnid)     
+        self.isLoading = true
+        $(document).ready ->
+          $.gsnSw2
+            displayWhenExists: '.gsnadunit,.gsnunit'
+            onData: (evt) ->
+              evt.cancel = self.disablesw
+            onClose: ->             
+              if self.selector  
+                $(self.selector).on 'click', '.gsnaction', self.actionHandler
+                self.selector  = undefined
+                                  
+              self.isLoading = false
+              self.refreshAdPods() 
+        
       return self
 
   # #endregion
@@ -337,7 +411,7 @@
         return
       linkData = data.detail
       if linkData
-        url = 'https://clientapi.gsn2.com/api/v1/profile/BrickOffer/' + gsnContext.ConsumerID + '/' + linkData.OfferCode
+        url = myGsn.Advertising.apiUrl + '/profile/BrickOffer/' + gsnContext.ConsumerID + '/' + linkData.OfferCode
         # open brick offer using the new api URL
         win.open url, ''
       return
@@ -348,7 +422,7 @@
     myParent$ = null
     try
       myParent$ = win.top.$
-    catch
+    catch e
       myParent$ = win.parent.$
     
     if myParent$ != $
@@ -386,4 +460,36 @@
       keyWord + '=' + keyValue.toString()
     else
       ''
-) window.jQuery or window.Zepto or window.tire or window.$, window.Gsn or {}, window, document, window.GSNContext
+) window.jQuery or window.Zepto or window.tire, window.Gsn or {}, window, document, window.GSNContext
+
+#auto init with attributes
+# at this point, we expect Gsn.Advertising to be available from above
+(($) ->
+  aPlugin = Gsn.Advertising
+  if !aPlugin then return
+  
+  attrs =
+    debug: (value) ->
+      return unless typeof value is "string"
+      aPlugin.isDebug = value isnt "false"
+    api: (value) ->           
+      return unless typeof value is "string"
+      aPlugin.apiUrl = value
+    gsnid: (value) ->                       
+      return unless value
+      Gsn.Advertising.gsnid = value
+    disablesw: (value) ->                               
+      return unless typeof value is "string"
+      aPlugin.disablesw = value isnt "false"
+    selector: (value) ->          
+      return unless typeof value is "string"
+      aPlugin.selector = value
+    
+  for script in document.getElementsByTagName("script")
+    if /gsndfp/.test(script.src)
+      for prefix in ['','data-']
+        for k,fn of attrs
+          fn script.getAttribute prefix+k
+
+  return
+) window.jQuery or window.Zepto or window.tire

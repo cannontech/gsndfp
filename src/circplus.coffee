@@ -1,7 +1,17 @@
 ###!
-#  Project: gsnsw2
- * ===============================
+#  Project: circplus
+
+ Initialize circplus using the code below:
+
+to init, tag any div with class "circplus"
+  $.circPlus({dfpID: '6394/6394.test', setTargeting: {dept: 'beverages'} });
+  $.circPlus({ dfpID: '6394/partner-root-3566/123.giantcarlisle', setTargeting: {dept: 'beverages'} });
+
+same command to refresh:
+  $.circPlus({ dfpID: '6394/partner-root-3566/123.giantcarlisle', setTargeting: {dept: 'beverages'} });
+
 ###
+
 (($, window) ->
   'use strict'
   sessionStorageX = sessionStorage
@@ -13,163 +23,29 @@
   dfpID = ''
   count = 0
   rendered = 0
-  dfpSelector = '.gsnsw'
+  dfpSelector = '.circplus'
   dfpOptions = {}
   dfpIsLoaded = false
   $adCollection = undefined
-  storeAs = 'gsnsw'
-  cssUrl = '//cdn.gsngrocers.com/script/sw2/1.1.0/sw2-override.css'
-  advertUrl = '//cdn.gsngrocers.com/script/sw2/1.1.0/advertisement.js'
-  didOpen = false
+  storeAs = 'circplus'
+  bodyTemplate = '<div class="gsn-slot-container"><div class="cpslot cpslot2" data-companion="true" data-dimensions="300x50"></div></div><div class="gsn-slot-container"><div class="cpslot cpslot1" data-dimensions="300x100,300x120"></div></div>'
 
   init = (id, selector, options) ->
+    dfpID = id
+    if $(selector).html() == ''
+      if options.templateSelector
+        $(selector).html $(options.templateSelector).html()
+      else
+        $(selector).html options.bodyTemplate or bodyTemplate
+ 
+    # real selector is use above to append bodyTemplate
+    $adCollection = $($('.cpslot').get().reverse())
+    dfpLoader()
     setOptions options
-    css = dfpOptions.cssUrl or cssUrl
-    advert = dfpOptions.advertUrl or advertUrl
-    if dfpOptions.cancel
-      onCloseCallback cancel: true
-    setResponsiveCss css
-    setAdvertisingTester advert
-    if getCookie('gsnsw2') == null
-      #if the cookies are set, don't show the light-box
-      dfpID = id
-      dfpLoader()
-      getPopup selector
-      Gsn.Advertising.on 'clickBrand', (e) ->
-        $('.sw-close').click()
-        return
-    else
-      onCloseCallback cancel: true
-    return
-
-  setResponsiveCss = (css) ->
-    #have we built this element before?
-    #insert css that will provide responsiveness      
-    el = document.getElementById('respo');
-    if el?
+    $ ->
+      createAds()
+      displayAds()
       return
-
-    head = document.getElementsByTagName('head').item(0)
-    cssTag = document.createElement('link')
-    cssTag.setAttribute 'href', css
-    cssTag.setAttribute 'rel', 'stylesheet'
-    cssTag.setAttribute 'id', 'respo'
-    head.appendChild cssTag
-
-  setAdvertisingTester = (advert) ->
-    #have we built this element before?
-    #insert the advertisement js (fails if an ad-blocker is not present)
-    el = document.getElementById('advertScript');
-    if el?
-      return
-      
-    body = document.getElementsByTagName('head').item(0)
-    scriptTag = document.createElement('script')
-    scriptTag.setAttribute 'src', advert   
-    scriptTag.setAttribute 'id', 'advertScript'
-    body.appendChild scriptTag
-
-  onOpenCallback = (event) ->
-    didOpen = true   
-    setTimeout (->
-      # adblocking detection  
-      if typeof(gsnGlobalTester) == 'undefined'
-        jQuery('.sw-msg').show()
-        jQuery('.sw-header-copy').hide()
-        jQuery('.sw-row').hide()   
-      return
-    ), 150
-    return
-
-  onCloseCallback = (event) ->
-    $('.sw-pop').remove()
-    $('.lean-overlay').remove()
-    window.scrollTo 0, 0            
-    if getCookie('gsnsw2') == null
-      setCookie 'gsnsw2', Gsn.Advertising.gsnNetworkId + ',' +  Gsn.Advertising.enableCircPlus, 1
-    if typeof dfpOptions.onClose == 'function'
-      dfpOptions.onClose didOpen
-    return
-
-  getPopup = (selector) ->
-    url = Gsn.Advertising.apiUrl + '/ShopperWelcome/Get/' + Gsn.Advertising.gsnid
-    $.ajax
-      url: url + '?callback=?'
-      dataType: 'jsonp'
-      success: (rsp) ->
-        if rsp
-          Gsn.Advertising.gsnNetworkId = rsp.NetworkId
-          Gsn.Advertising.enableCircPlus = rsp.EnableCircPlus
-          data = rsp.Template
-          dfpID = rsp.NetworkId
-                              
-        evt = { data: rsp, cancel: false }                      
-        dfpOptions.onData evt
-        if evt.cancel
-          data = null 
-        if data
-          #add the random cachebuster
-          data = data.replace(/%%CACHEBUSTER%%/g, (new Date).getTime()).replace(/%%CHAINID%%/g, Gsn.Advertising.gsnid)
-          if 0 == $('#sw').length
-            #have we built this element before?
-            #insert the template for the shopper welcome window
-            body = document.getElementsByTagName('body').item(0)
-            div = document.createElement('div')
-            div.setAttribute 'id', 'sw'
-            body.appendChild div
-          $('#sw').html clean(data)
-          $adCollection = $(selector)
-          if $adCollection        
-            console.log '1'   
-            createAds()
-            displayAds()                    
-            console.log '2'   
-            #open the modal to show shopper welcome
-            $('.sw-pop').easyModal
-              autoOpen: true
-              closeOnEscape: false
-              onClose: onCloseCallback
-              onOpen: onOpenCallback
-              top: 25
-        else
-          onCloseCallback cancel: true
-        return
-    return
-
-  clean = (data) ->
-    #use this to get rid of any elements (place-holder images)
-    #before we render to reduce the # calls to the server/cdn
-    template = $(data.trim())
-    #http://bugs.jquery.com/ticket/13223
-    $('.remove', template).remove()
-    template.prop 'outerHTML'
-
-  getCookie = (NameOfCookie) ->
-    if document.cookie.length > 0
-      begin = document.cookie.indexOf(NameOfCookie + '=')
-      end = 0
-      if begin != -1
-        begin += NameOfCookie.length + 1
-        end = document.cookie.indexOf(';', begin)
-        if end == -1
-          end = document.cookie.length
-        cookieData = decodeURI(document.cookie.substring(begin, end))
-        if (cookieData.indexOf(',') > 0)
-          cookieDatas = cookieData.split(',')
-          Gsn.Advertising.gsnNetworkId = cookieDatas[0]
-          Gsn.Advertising.enableCircPlus = cookieData[1]
-        return cookieData
-    null
-
-  setCookie = (NameOfCookie, value, expiredays) ->
-    ExpireDate = new Date
-    ExpireDate.setTime ExpireDate.getTime() + expiredays * 24 * 3600 * 1000
-    document.cookie = NameOfCookie + '=' + encodeURI(value) + (if expiredays == null then '' else '; expires=' + ExpireDate.toGMTString()) + '; path=/'
-    return
-
-  clearCookie = (nameOfCookie) ->
-    if nameOfCookie == getCookie(nameOfCookie)
-      document.cookie = nameOfCookie + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT'
     return
 
   setOptions = (options) ->
@@ -183,7 +59,9 @@
       refreshExisting: true
       disablePublisherConsole: false
       disableInitialLoad: false
+      inViewOnly: true
       noFetch: false
+      
     # Merge options objects
     $.extend true, dfpOptions, options
     # If a custom googletag is specified, use it.
@@ -199,7 +77,7 @@
       $adUnit = $(this)
       count++
       # adUnit id - this will use an existing id or an auto generated one.
-      adUnitID = getID($adUnit, 'gsnsw', count)
+      adUnitID = getID($adUnit, 'gsncircplus', count)
       # get dimensions of the adUnit
       dimensions = getDimensions($adUnit)
       # get existing content
@@ -222,6 +100,10 @@
           googleAdUnit = window.googletag.defineOutOfPageSlot(dfpID, adUnitID).addService(window.googletag.pubads())
         else
           googleAdUnit = window.googletag.defineSlot(dfpID, dimensions, adUnitID).addService(window.googletag.pubads())
+        # mark as companion ad
+        companion = $adUnit.data('companion')
+        if companion
+          googleAdUnit.addService window.googletag.companionAds()
         # Sets custom targeting for just THIS ad unit if it has been specified
         targeting = $adUnit.data('targeting')
         if targeting
@@ -250,7 +132,7 @@
           rendered++
           display = $adUnit.css('display')
           $adUnit.removeClass('display-none').addClass 'display-' + display
-          #googleAdUnit.oldRenderEnded();//ecs
+          googleAdUnit.oldRenderEnded()
           # Excute afterEachAdLoaded callback if provided
           if typeof dfpOptions.afterEachAdLoaded == 'function'
             dfpOptions.afterEachAdLoaded.call this, $adUnit
@@ -288,7 +170,7 @@
           if valueTrimmed.length > 0
             window.googletag.pubads().setCategoryExclusion valueTrimmed
           return
-      if dfpOptions.collapseEmptyDivs
+      if dfpOptions.collapseEmptyDivs == true or dfpOptions.collapseEmptyDivs == 'original'
         window.googletag.pubads().collapseEmptyDivs()
       if dfpOptions.disablePublisherConsole == true
         window.googletag.pubads().disablePublisherConsole()
@@ -296,9 +178,19 @@
         window.googletag.pubads().disableInitialLoad()
       if dfpOptions.noFetch == true
         window.googletag.pubads().noFetch()
+      #googletag.pubads().enableAsyncRendering(); 
+      window.googletag.companionAds().setRefreshUnfilledSlots true
       window.googletag.enableServices()
       return
     return
+
+  isInView = (elem) ->
+    docViewTop = $(window).scrollTop()
+    docViewBottom = docViewTop + $(window).height()
+    elemTop = elem.offset().top
+    elemBottom = elemTop + elem.height()
+    #Is more than half of the element visible
+    elemTop + (elemBottom - elemTop) / 2 >= docViewTop and elemTop + (elemBottom - elemTop) / 2 <= docViewBottom
 
   displayAds = ->
     toPush = []
@@ -307,7 +199,9 @@
       $adUnit = $(this)
       $adUnitData = $adUnit.data(storeAs)
       if dfpOptions.refreshExisting and $adUnitData and $adUnit.data('gsnDfpExisting')
-        toPush.push $adUnitData
+        # determine if element is in view
+        if !dfpOptions.inViewOnly or isInView($adUnit) and $adUnit.is(':visible')
+          toPush.push $adUnitData
       else
         $adUnit.data 'gsnDfpExisting', true
         window.googletag.cmd.push ->
@@ -364,8 +258,8 @@
       dfpBlocked()
       return
 
-    useSSL = 'https:' == document.location.protocol
-    gads.src = (if useSSL then 'https:' else 'http:') + '//www.googletagservices.com/tag/js/gpt.js'
+    useSsl = 'https:' == document.location.protocol
+    gads.src = (if useSsl then 'https:' else 'http:') + '//www.googletagservices.com/tag/js/gpt.js'
     node = document.getElementsByTagName('script')[0]
     node.parentNode.insertBefore gads, node
     # Adblock plus seems to hide blocked scripts... so we check for that
@@ -428,13 +322,10 @@
   # Add function to the jQuery / Zepto / tire namespace
   # @param  String id      (Optional) The DFP account ID
   # @param  Object options (Optional) Custom options to apply
-   - network id
-   - chain id
-   - store id (optional)
   ###
 
-  $.gsnSw2 =
-  $.fn.gsnSw2 = (id, options) ->
+  $.circPlus =
+  $.fn.circPlus = (id, options) ->
     options = options or {}
     if id == undefined
       id = dfpID
@@ -444,9 +335,8 @@
     selector = this
     if typeof this == 'function'
       selector = dfpSelector
-    if $(options.displayWhenExists or '.gsnunit').length
-      init id, selector, options
+    init id, selector, options
     this
 
   return
-) window.jQuery or window.Zepto or window.tire, window
+) window.jQuery or window.Zepto or window.tire or window.$, window

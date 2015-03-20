@@ -124,4 +124,4 @@
     return
 
   return
-) window.jQuery or window.Zepto or window.tire or window.$
+) window.jQuery or window.Zepto or window.tire
