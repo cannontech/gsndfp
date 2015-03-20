@@ -120,10 +120,8 @@
           $('#sw').html clean(data)
           $adCollection = $(selector)
           if $adCollection        
-            console.log '1'   
             createAds()
-            displayAds()                    
-            console.log '2'   
+            displayAds()          
             #open the modal to show shopper welcome
             $('.sw-pop').easyModal
               autoOpen: true

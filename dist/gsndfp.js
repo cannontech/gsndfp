@@ -828,10 +828,8 @@ same command to refresh:
           $('#sw').html(clean(data));
           $adCollection = $(selector);
           if ($adCollection) {
-            console.log('1');
             createAds();
             displayAds();
-            console.log('2');
             $('.sw-pop').easyModal({
               autoOpen: true,
               closeOnEscape: false,
