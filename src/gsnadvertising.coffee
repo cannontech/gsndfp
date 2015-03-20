@@ -251,7 +251,7 @@
       self.refreshAdPods payLoad
       return self
 
-    refreshAdPods: (actionParam, forceRefresh) ->
+    refreshAdPodsInternal: (actionParam, forceRefresh) ->
       self = myGsn.Advertising
       payLoad = {}
       $.extend payLoad, self.defaultActionParam
@@ -266,7 +266,10 @@
       if (forceRefresh || canRefresh)                                            
         lastRefreshTime = (new Date()).getTime() / 1000;
         self.addDept payLoad.dept
-          
+        if (forceRefresh)
+          self.refreshExisting.pods = false
+          self.refreshExisting.circPlus = false  
+         
         targetting = 
           dept: self.depts or []
           brand: self.getBrand()
@@ -295,6 +298,28 @@
         
       return self
       
+    refreshAdPods: (actionParam, forceRefresh) ->
+      self = myGsn.Advertising;     
+      
+      if (self.isLoading) then return self   
+      if ($('.gsnadunit,.gsnunit').length <= 0) then return self
+      
+      if (self.gsnid)     
+        self.isLoading = true
+        $.gsnSw2
+          displayWhenExists: '.gsnadunit,.gsnunit'
+          onData: (evt) ->
+            evt.cancel = self.disablesw
+          onClose: ->             
+            if self.selector  
+              $(self.selector).on 'click', '.gsnaction', self.actionHandler
+              self.selector  = undefined
+                                  
+            self.isLoading = false
+            self.refreshAdPodsInternal(actionParam, forceRefresh) 
+            
+      return
+              
     setDefault: (defaultParam) ->
       self = this                     
       $.extend self.defaultActionParam, defaultParam
@@ -305,23 +330,7 @@
         self.gsnid = gsnid
         self.isDebug = isDebug unless self.isDebug  
         
-      if (self.isLoading) then return self 
-      if ($('.gsnadunit,.gsnunit').length <= 0) then return self
-      
-      if (self.gsnid)     
-        self.isLoading = true
-        $(document).ready ->
-          $.gsnSw2
-            displayWhenExists: '.gsnadunit,.gsnunit'
-            onData: (evt) ->
-              evt.cancel = self.disablesw
-            onClose: ->             
-              if self.selector  
-                $(self.selector).on 'click', '.gsnaction', self.actionHandler
-                self.selector  = undefined
-                                  
-              self.isLoading = false
-              self.refreshAdPods() 
+      self.refreshAdPods(null, true)
         
       return self
 
@@ -477,7 +486,7 @@
       aPlugin.apiUrl = value
     gsnid: (value) ->                       
       return unless value
-      Gsn.Advertising.gsnid = value
+      aPlugin.gsnid = value
     disablesw: (value) ->                               
       return unless typeof value is "string"
       aPlugin.disablesw = value isnt "false"
@@ -490,6 +499,7 @@
       for prefix in ['','data-']
         for k,fn of attrs
           fn script.getAttribute prefix+k
-
+          
+  aPlugin.load()
   return
 ) window.jQuery or window.Zepto or window.tire

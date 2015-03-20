@@ -29,22 +29,18 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script src="../dist/gsndfp.js" data-gsnid="119" data-api="https://clientapix.gsn2.com/api/v1"></script>
     <script>
-
-      $(document).ready(function() {
-        // this is for demo only to help clear cookie, do not use the code below this line
-        document.cookie = "gsnsw2=;expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
-      
-        // initialize default for gsn actions
-        Gsn.Advertising.setDefault({
-          page: 'demo',                          // page or screen name
-          storeid: '37605',                      // store number or id
-          deviceid: '100',                       // uniquely identify device
-          consumerid: '38BD8852-CF6F',           // uniquely identify consumer
-          isanon: false,                         // determine if registered with website
-          loyaltyid: '12345',                    // consumer loyalty id
-          latlng: [42.9496975,-78.8982536]       // latitude, longitude
-        });
-        Gsn.Advertising.load();
+      // this is for demo only to help clear cookie, do not use the code below this line
+      document.cookie = "gsnsw2=;expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+    
+      // initialize default for gsn actions
+      Gsn.Advertising.setDefault({
+        page: 'demo',                          // page or screen name
+        storeid: '37605',                      // store number or id
+        deviceid: '100',                       // uniquely identify device
+        consumerid: '38BD8852-CF6F',           // uniquely identify consumer
+        isanon: false,                         // determine if registered with website
+        loyaltyid: '12345',                    // consumer loyalty id
+        latlng: [42.9496975,-78.8982536]       // latitude, longitude
       });
     </script>
   </body>
