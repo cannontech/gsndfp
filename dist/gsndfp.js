@@ -702,7 +702,7 @@ same command to refresh:
  * ===============================
  */
 
-(function($, window) {
+(function($, window, doc) {
   'use strict';
   var $adCollection, advertUrl, clean, clearCookie, count, createAds, cssUrl, dfpBlocked, dfpID, dfpIsLoaded, dfpLoader, dfpOptions, dfpScript, dfpSelector, didOpen, displayAds, getCookie, getDimensions, getID, getPopup, init, onCloseCallback, onOpenCallback, rendered, sessionStorageX, setAdvertisingTester, setCookie, setOptions, setResponsiveCss, storeAs;
   sessionStorageX = sessionStorage;
@@ -796,19 +796,26 @@ same command to refresh:
     }
   };
   getPopup = function(selector) {
-    var url;
+    var dataType, url;
     url = Gsn.Advertising.apiUrl + '/ShopperWelcome/Get/' + Gsn.Advertising.gsnid;
+    dataType = 'json';
+    if (!doc.addEventListener) {
+      url += '?callback=?';
+      dataType = 'jsonp';
+    }
     $.ajax({
-      url: url + '?callback=?',
-      dataType: 'jsonp',
+      url: url,
+      dataType: dataType,
       success: function(rsp) {
         var body, data, div, evt;
         if (rsp) {
-          Gsn.Advertising.gsnNetworkId = rsp.NetworkId;
+          if (!Gsn.Advertising.gsnNetworkId) {
+            Gsn.Advertising.gsnNetworkId = rsp.NetworkId;
+          }
           Gsn.Advertising.enableCircPlus = rsp.EnableCircPlus;
           data = rsp.Template;
-          dfpID = rsp.NetworkId;
         }
+        dfpID = Gsn.Advertising.gsnNetworkId;
         evt = {
           data: rsp,
           cancel: false
@@ -1176,7 +1183,7 @@ same command to refresh:
     }
     return this;
   };
-})(window.jQuery || window.Zepto || window.tire, window);
+})(window.jQuery || window.Zepto || window.tire, window, document);
 
 
 /**

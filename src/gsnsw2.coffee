@@ -2,7 +2,7 @@
 #  Project: gsnsw2
  * ===============================
 ###
-(($, window) ->
+(($, window, doc) ->
   'use strict'
   sessionStorageX = sessionStorage
   if typeof sessionStorageX == 'undefined'
@@ -93,16 +93,27 @@
 
   getPopup = (selector) ->
     url = Gsn.Advertising.apiUrl + '/ShopperWelcome/Get/' + Gsn.Advertising.gsnid
+    dataType = 'json'
+    
+    # fallback to jsonp for IE lt 9
+    # this allow for better caching on non-IE browser
+    if (!doc.addEventListener)
+       url += '?callback=?' 
+       dataType = 'jsonp'
+       
     $.ajax
-      url: url + '?callback=?'
-      dataType: 'jsonp'
+      url: url
+      dataType: dataType
       success: (rsp) ->
         if rsp
-          Gsn.Advertising.gsnNetworkId = rsp.NetworkId
+          # allow for local value to override remote value
+          if (!Gsn.Advertising.gsnNetworkId)
+            Gsn.Advertising.gsnNetworkId = rsp.NetworkId
+
           Gsn.Advertising.enableCircPlus = rsp.EnableCircPlus
           data = rsp.Template
-          dfpID = rsp.NetworkId
-                              
+                                               
+        dfpID = Gsn.Advertising.gsnNetworkId 
         evt = { data: rsp, cancel: false }                      
         dfpOptions.onData evt
         if evt.cancel
@@ -447,4 +458,4 @@
     this
 
   return
-) window.jQuery or window.Zepto or window.tire, window
+) window.jQuery or window.Zepto or window.tire, window, document
