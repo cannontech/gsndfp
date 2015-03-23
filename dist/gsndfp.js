@@ -210,7 +210,7 @@ same command to refresh:
       $adUnit = $(this);
       $adUnitData = $adUnit.data(storeAs);
       if (dfpOptions.refreshExisting && $adUnitData && $adUnit.data('gsnDfpExisting')) {
-        if (!dfpOptions.inViewOnly || isInView($adUnit) && $adUnit.is(':visible')) {
+        if (!dfpOptions.inViewOnly || isInView($adUnit)) {
           toPush.push($adUnitData);
         }
       } else {
@@ -545,7 +545,7 @@ same command to refresh:
       $adUnit = $(this);
       $adUnitData = $adUnit.data(storeAs);
       if (dfpOptions.refreshExisting && $adUnitData && $adUnit.data('gsnDfpExisting')) {
-        if (!dfpOptions.inViewOnly || isInView($adUnit) && $adUnit.is(':visible')) {
+        if (!dfpOptions.inViewOnly || isInView($adUnit)) {
           toPush.push($adUnitData);
         }
       } else {
@@ -1617,11 +1617,11 @@ same command to refresh:
         });
         self.refreshExisting.pods = true;
         if (self.enableCircPlus) {
-          if (!targetting.depts) {
-            targetting.depts = [];
+          if (!targetting.dept) {
+            targetting.dept = [];
           }
-          if (targetting.depts.length <= 0) {
-            targetting.depts = ['produce'];
+          if (targetting.dept.length <= 0) {
+            targetting.dept = ['produce'];
           }
           $.circPlus({
             dfpID: self.gsnNetworkId.replace(/\/$/gi, '') + (self.gsnNetworkStore || ''),

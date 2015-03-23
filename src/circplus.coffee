@@ -200,7 +200,7 @@ same command to refresh:
       $adUnitData = $adUnit.data(storeAs)
       if dfpOptions.refreshExisting and $adUnitData and $adUnit.data('gsnDfpExisting')
         # determine if element is in view
-        if !dfpOptions.inViewOnly or isInView($adUnit) and $adUnit.is(':visible')
+        if !dfpOptions.inViewOnly or isInView($adUnit)
           toPush.push $adUnitData
       else
         $adUnit.data 'gsnDfpExisting', true

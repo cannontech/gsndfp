@@ -284,9 +284,9 @@
         self.refreshExisting.pods = true
         
         if self.enableCircPlus
-          targetting.depts = [] unless targetting.depts
-          if targetting.depts.length <= 0
-             targetting.depts = ['produce']
+          targetting.dept = [] unless targetting.dept
+          if targetting.dept.length <= 0
+             targetting.dept = ['produce']
              
           $.circPlus       
             dfpID: self.gsnNetworkId.replace(/\/$/gi, '') + (self.gsnNetworkStore or '')
