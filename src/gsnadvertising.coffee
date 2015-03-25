@@ -84,7 +84,7 @@
     gsnid: 0      
     selector: 'body'
     apiUrl: 'https://clientapi.gsn2.com/api/v1'
-    gsnNetworkId: '/6394/digitalstore.test'
+    gsnNetworkId: undefined
     gsnNetworkStore: undefined
     onAllEvents: undefined     
     oldGsnAdvertising: oldGsnAdvertising
@@ -98,6 +98,7 @@
     refreshExisting: 
       circPlus: false
       pods: false
+    circPlusDept: undefined
     trigger: (eventName, eventData) ->
       if eventName.indexOf('gsnevent') < 0
         eventName = 'gsnevent:' + eventName
@@ -146,9 +147,11 @@
         oldDepts = self.depts
         depts = []
         goodDepts = {}                 
-        depts.unshift self.cleanKeyword dept
+        depts.push self.cleanKeyword dept
+        goodDepts[depts[0]] = 1
+        self.circPlusDept = depts[0]
         for dept in oldDepts
-          if (goodDepts[dept]?)
+          if (!goodDepts[dept]?)
             depts.push dept
           goodDepts[dept] = 1
       
@@ -283,11 +286,8 @@
           refreshExisting: self.refreshExisting.pods
         self.refreshExisting.pods = true
         
-        if self.enableCircPlus
-          targetting.dept = [] unless targetting.dept
-          if targetting.dept.length <= 0
-             targetting.dept = ['produce']
-             
+        if self.enableCircPlus        
+          targetting.dept = [self.circPlusDept || 'produce']  
           $.circPlus       
             dfpID: self.gsnNetworkId.replace(/\/$/gi, '') + (self.gsnNetworkStore or '')
             setTargeting: targetting
