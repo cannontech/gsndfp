@@ -1,7 +1,7 @@
 {
   "name": "gsndfp",
   "description": "GSN DFP Plugin",
-  "version": "1.1.0",
+  "version": "1.1.4",
   "homepage": "https://github.com/gsn/gsndfp",
   "author": {
     "name": "Grocery Shopping Network",
@@ -12,7 +12,7 @@
     {
       "name": "Tom Nguyen",
       "email": "tnguyen@groceryshopping.net",
-    "url": "http://www.groceryshopping.net"
+      "url": "http://www.groceryshopping.net"
     }
   ],
   "repository": {
@@ -48,6 +48,7 @@
     "gulp-concat": "~2.3.4",
     "gulp-util": "*",
     "gulp-clean": "*",
+    "gulp-bump": "*",
     "jshint-stylish": "^1.0.0"
   },
   "engines": {

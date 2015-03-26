@@ -7,6 +7,7 @@ var rename =     require('gulp-rename');
 var coffee =     require('gulp-coffee');
 var concat =     require('gulp-concat');
 var clean =      require('gulp-clean');
+var bump =       require('gulp-bump');
 var header =     require('gulp-header');
                  require('gulp-grunt')(gulp);
 
@@ -22,6 +23,12 @@ var banner = [
   ' */\n'
 ].join('\n');
 
+gulp.task('bump_version', function(){
+    return gulp.src(['./package.json', './bower.json', './component.json'])
+        .pipe(bump({type: 'patch'}))
+        .pipe(gulp.dest('./'));
+});
+
 gulp.task('clean', function() {
   return gulp.src('./dist/*')
     .pipe(clean({force: true}));
@@ -35,13 +42,14 @@ gulp.task('coffee', function() {
     .pipe(gulp.dest('dist'));
 });
 
-gulp.task('default', ['clean', 'coffee'], function() {
+gulp.task('default', ['clean', 'coffee', 'bump_version'], function() {
   return gulp.src('./dist/*.js')
     .pipe(uglify())
     .pipe(header(banner, {pkg: pkg}))
     .pipe(rename({suffix: '.min'}))
     .pipe(gulp.dest('dist'));
 });
+
 
 gulp.task('SpecRunner.update', function(){
 	var target  = './test/SpecRunner.html',

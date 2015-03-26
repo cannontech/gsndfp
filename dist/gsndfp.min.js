@@ -1,6 +1,6 @@
 /*!
  * gsndfp
- * version 1.1.0
+ * version 1.1.3
  * Requires jQuery 1.7.1 or higher
  * git@github.com:gsn/gsndfp.git
  * License: Grocery Shopping Network
