@@ -1366,6 +1366,35 @@ same command to refresh:
       return;
     }
   }
+  createFrame = function() {
+    var tempIFrame;
+    if (typeof tickerFrame === 'undefined') {
+      tempIFrame = doc.createElement('iframe');
+      tempIFrame.setAttribute('id', 'gsnticker');
+      tempIFrame.style.position = 'absolute';
+      tempIFrame.style.top = '-9999em';
+      tempIFrame.style.left = '-9999em';
+      tempIFrame.style.zIndex = '99';
+      tempIFrame.style.border = '0px';
+      tempIFrame.style.width = '0px';
+      tempIFrame.style.height = '0px';
+      tickerFrame = doc.body.appendChild(tempIFrame);
+      if (doc.frames) {
+        tickerFrame = doc.frames['gsnticker'];
+      }
+    }
+  };
+  buildQueryString = function(keyWord, keyValue) {
+    if (keyValue !== null) {
+      keyValue = new String(keyValue);
+      if (keyWord !== 'ProductDescription') {
+        keyValue = keyValue.replace(/&/, '`');
+      }
+      return keyWord + '=' + keyValue.toString();
+    } else {
+      return '';
+    }
+  };
   Plugin = function() {
     this.init();
   };
@@ -1632,7 +1661,7 @@ same command to refresh:
       }
       return self;
     },
-    refreshAdPods: function(actionParam, forceRefresh) {
+    refresh: function(actionParam, forceRefresh) {
       var self;
       self = myGsn.Advertising;
       if (self.isLoading) {
@@ -1682,6 +1711,7 @@ same command to refresh:
   myGsn.Advertising.brickRedirect = myPlugin.clickBrickOffer;
   myGsn.Advertising.clickBrand = myPlugin.clickBrand;
   myGsn.Advertising.clickThru = myPlugin.clickProduct;
+  myGsn.Advertising.refreshAdPods = myPlugin.refresh;
   myGsn.Advertising.logAdImpression = function() {};
   myGsn.Advertising.logAdRequest = function() {};
   myGsn.Advertising.promotionRedirect = myPlugin.clickPromotion;
@@ -1782,36 +1812,6 @@ same command to refresh:
       parent$ = myParent$;
     }
   }
-  return;
-  createFrame = function() {
-    var tempIFrame;
-    if (typeof tickerFrame === 'undefined') {
-      tempIFrame = doc.createElement('iframe');
-      tempIFrame.setAttribute('id', 'gsnticker');
-      tempIFrame.style.position = 'absolute';
-      tempIFrame.style.top = '-9999em';
-      tempIFrame.style.left = '-9999em';
-      tempIFrame.style.zIndex = '99';
-      tempIFrame.style.border = '0px';
-      tempIFrame.style.width = '0px';
-      tempIFrame.style.height = '0px';
-      tickerFrame = doc.body.appendChild(tempIFrame);
-      if (doc.frames) {
-        tickerFrame = doc.frames['gsnticker'];
-      }
-    }
-  };
-  return buildQueryString = function(keyWord, keyValue) {
-    if (keyValue !== null) {
-      keyValue = new String(keyValue);
-      if (keyWord !== 'ProductDescription') {
-        keyValue = keyValue.replace(/&/, '`');
-      }
-      return keyWord + '=' + keyValue.toString();
-    } else {
-      return '';
-    }
-  };
 })(window.jQuery || window.Zepto || window.tire, window.Gsn || {}, window, document, window.GSNContext);
 
 (function($) {

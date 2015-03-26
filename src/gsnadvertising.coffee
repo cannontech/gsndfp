@@ -31,7 +31,38 @@
   if typeof oldGsnAdvertising != 'undefined'
     if oldGsnAdvertising.pluginLoaded
       return
-      
+               
+  createFrame = ->
+    if typeof tickerFrame == 'undefined'
+      # create the IFrame and assign a reference to the
+      # object to our global variable tickerFrame.
+      tempIFrame = doc.createElement('iframe')
+      tempIFrame.setAttribute 'id', 'gsnticker'
+      tempIFrame.style.position = 'absolute'
+      tempIFrame.style.top = '-9999em'
+      tempIFrame.style.left = '-9999em'
+      tempIFrame.style.zIndex = '99'
+      tempIFrame.style.border = '0px'
+      tempIFrame.style.width = '0px'
+      tempIFrame.style.height = '0px'
+      tickerFrame = doc.body.appendChild(tempIFrame)
+      if doc.frames
+        # this is for IE5 Mac, because it will only
+        # allow access to the doc object
+        # of the IFrame if we access it through
+        # the doc.frames array
+        tickerFrame = doc.frames['gsnticker']
+    return
+
+  buildQueryString = (keyWord, keyValue) ->
+    if keyValue != null
+      keyValue = new String(keyValue)
+      if keyWord != 'ProductDescription'
+        # some product descriptions have '&amp;' which should not be replaced with '`'. 
+        keyValue = keyValue.replace(/&/, '`')
+      keyWord + '=' + keyValue.toString()
+    else
+      ''
   ##region The actual plugin constructor
 
   Plugin = ->
@@ -298,7 +329,7 @@
         
       return self
       
-    refreshAdPods: (actionParam, forceRefresh) ->
+    refresh: (actionParam, forceRefresh) ->
       self = myGsn.Advertising;     
       
       if (self.isLoading) then return self   
@@ -341,6 +372,7 @@
   myGsn.Advertising.brickRedirect = myPlugin.clickBrickOffer
   myGsn.Advertising.clickBrand = myPlugin.clickBrand
   myGsn.Advertising.clickThru = myPlugin.clickProduct
+  myGsn.Advertising.refreshAdPods = myPlugin.refresh
 
   myGsn.Advertising.logAdImpression = ->
 
@@ -352,6 +384,7 @@
   myGsn.Advertising.promotionRedirect = myPlugin.clickPromotion
   myGsn.Advertising.verifyClickThru = myPlugin.clickLink
   myGsn.Advertising.recipeRedirect = myPlugin.clickRecipe
+  
   # put GSN back online
   win.Gsn = myGsn
   ##region support for classic GSN
@@ -438,37 +471,6 @@
       parent$ = myParent$
   return
         
-  createFrame = ->
-    if typeof tickerFrame == 'undefined'
-      # create the IFrame and assign a reference to the
-      # object to our global variable tickerFrame.
-      tempIFrame = doc.createElement('iframe')
-      tempIFrame.setAttribute 'id', 'gsnticker'
-      tempIFrame.style.position = 'absolute'
-      tempIFrame.style.top = '-9999em'
-      tempIFrame.style.left = '-9999em'
-      tempIFrame.style.zIndex = '99'
-      tempIFrame.style.border = '0px'
-      tempIFrame.style.width = '0px'
-      tempIFrame.style.height = '0px'
-      tickerFrame = doc.body.appendChild(tempIFrame)
-      if doc.frames
-        # this is for IE5 Mac, because it will only
-        # allow access to the doc object
-        # of the IFrame if we access it through
-        # the doc.frames array
-        tickerFrame = doc.frames['gsnticker']
-    return
-
-  buildQueryString = (keyWord, keyValue) ->
-    if keyValue != null
-      keyValue = new String(keyValue)
-      if keyWord != 'ProductDescription'
-        # some product descriptions have '&amp;' which should not be replaced with '`'. 
-        keyValue = keyValue.replace(/&/, '`')
-      keyWord + '=' + keyValue.toString()
-    else
-      ''
 ) window.jQuery or window.Zepto or window.tire, window.Gsn or {}, window, document, window.GSNContext
 
 #auto init with attributes

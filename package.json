@@ -29,7 +29,7 @@
   ],
   "main": "dist/gsndfp.js",
   "directories": {
-    "example": "examples",
+    "example": "demo",
     "test": "tests"
   },
   "dependencies": {},
@@ -51,7 +51,7 @@
     "jshint-stylish": "^1.0.0"
   },
   "engines": {
-    "node": ">= 0.9.0"
+    "node": ">= 0.12.0"
   },
   "scripts": {
     "test": "gulp test",
