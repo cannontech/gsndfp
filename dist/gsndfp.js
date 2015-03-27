@@ -1,6 +1,6 @@
 /*!
  * gsndfp
- * version 1.1.3
+ * version 1.1.4
  * Requires jQuery 1.7.1 or higher
  * git@github.com:gsn/gsndfp.git
  * License: Grocery Shopping Network
@@ -799,9 +799,11 @@ same command to refresh:
     var dataType, url;
     url = Gsn.Advertising.apiUrl + '/ShopperWelcome/Get/' + Gsn.Advertising.gsnid;
     dataType = 'json';
-    if (!doc.addEventListener) {
-      url += '?callback=?';
-      dataType = 'jsonp';
+    if (!!(window.opera && window.opera.version)) {
+      if (document.all && !window.atop) {
+        url += '?callback=?';
+        dataType = 'jsonp';
+      }
     }
     $.ajax({
       url: url,

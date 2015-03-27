@@ -95,11 +95,14 @@
     url = Gsn.Advertising.apiUrl + '/ShopperWelcome/Get/' + Gsn.Advertising.gsnid
     dataType = 'json'
     
-    # fallback to jsonp for IE lt 9
+    # fallback to jsonp for IE lt 10
     # this allow for better caching on non-IE browser
-    if (!doc.addEventListener)
-       url += '?callback=?' 
-       dataType = 'jsonp'
+    # if I am opera I need to not enter this function
+    if (!!(window.opera && window.opera.version))
+      # ok now am I IE (opera is the only other browser that will do this
+      if (document.all && !window.atop)
+        url += '?callback=?' 
+        dataType = 'jsonp'  
        
     $.ajax
       url: url
