@@ -1,6 +1,6 @@
 /*!
  * gsndfp
- * version 1.1.16
+ * version 1.1.17
  * Requires jQuery 1.7.1 or higher
  * git@github.com:gsn/gsndfp.git
  * License: Grocery Shopping Network
@@ -1424,6 +1424,7 @@ same command to refresh:
     },
     data: {},
     translator: {
+      siteid: 'sid',
       page: 'pg',
       evtname: 'ename',
       dept: 'dpt',
@@ -1668,7 +1669,8 @@ same command to refresh:
       if (actionParam) {
         $.extend(payLoad, actionParam);
       }
-      self.trackAction(actionParam);
+      payLoad.siteid = self.gsnid;
+      self.trackAction(payLoad);
       canRefresh = lastRefreshTime <= 0 || ((new Date).getTime() / 1000 - lastRefreshTime) >= self.minSecondBetweenRefresh;
       if (forceRefresh || canRefresh) {
         lastRefreshTime = (new Date()).getTime() / 1000;

@@ -112,6 +112,7 @@
       # additional parameters TBD
     data: {}
     translator:
+      siteid: 'sid'
       page: 'pg'
       evtname: 'ename'
       dept: 'dpt'
@@ -333,7 +334,8 @@
         $.extend payLoad, actionParam
 
       # track payLoad
-      self.trackAction actionParam
+      payLoad.siteid = self.gsnid
+      self.trackAction payLoad
       canRefresh = lastRefreshTime <= 0 || ( (new Date).getTime() / 1000 - lastRefreshTime) >= self.minSecondBetweenRefresh
 
       if (forceRefresh || canRefresh)
