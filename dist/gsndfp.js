@@ -1,6 +1,6 @@
 /*!
  * gsndfp
- * version 1.1.5
+ * version 1.1.6
  * Requires jQuery 1.7.1 or higher
  * git@github.com:gsn/gsndfp.git
  * License: Grocery Shopping Network
@@ -1615,7 +1615,7 @@ same command to refresh:
           payLoad[index.replace('gsn', '').toLowerCase()] = attr;
         }
       });
-      self.refres(payLoad);
+      self.refresh(payLoad);
       return self;
     },
     refreshAdPodsInternal: function(actionParam, forceRefresh) {

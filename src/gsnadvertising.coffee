@@ -282,7 +282,7 @@
         if /^gsn/gi.test(index)
           payLoad[index.replace('gsn', '').toLowerCase()] = attr;
         return
-      self.refres payLoad
+      self.refresh payLoad
       return self
 
     refreshAdPodsInternal: (actionParam, forceRefresh) ->
