@@ -1,6 +1,6 @@
 /*!
  * gsndfp
- * version 1.1.6
+ * version 1.1.16
  * Requires jQuery 1.7.1 or higher
  * git@github.com:gsn/gsndfp.git
  * License: Grocery Shopping Network
@@ -1423,6 +1423,25 @@ same command to refresh:
       evtvalue: 0
     },
     data: {},
+    translator: {
+      page: 'pg',
+      evtname: 'ename',
+      dept: 'dpt',
+      deviceid: 'dvc',
+      storeid: 'str',
+      consumerid: 'cust',
+      isanon: 'isa',
+      loyaltyid: 'loy',
+      aisle: 'asl',
+      category: 'cat',
+      shelf: 'shf',
+      brand: 'brd',
+      pcode: 'pcd',
+      pdesc: 'pds',
+      latlng: 'latlng',
+      evtcategory: 'ecat',
+      evtvalue: 'eval'
+    },
     isDebug: false,
     gsnid: 0,
     selector: 'body',
@@ -1443,6 +1462,7 @@ same command to refresh:
       pods: false
     },
     circPlusDept: void 0,
+    timer: void 0,
     trigger: function(eventName, eventData) {
       if (eventName.indexOf('gsnevent') < 0) {
         eventName = 'gsnevent:' + eventName;
@@ -1480,10 +1500,32 @@ same command to refresh:
       $(doc).off(eventName, callback);
     },
     log: function(message) {
-      if (console) {
+      var self;
+      self = myGsn.Advertising;
+      if (self.isDebug && console) {
         console.log(message);
       }
-      return this;
+      return self;
+    },
+    trackAction: function(actionParam) {
+      var self, url;
+      self = myGsn.Advertising;
+      url = '//pi.gsngrocers.com/pi.gif?nc=' + (new Date()).getTime();
+      if (actionParam) {
+        $.each(actionParam, function(idx, attr) {
+          url += '&' + self.translator[idx] + '=' + encodeURI(attr);
+        });
+      }
+      $.ajax({
+        async: false,
+        url: url
+      });
+      if (JSON) {
+        if (JSON.stringify) {
+          self.log(JSON.stringify(actionParam));
+        }
+      }
+      return self;
     },
     cleanKeyword: function(keyword) {
       var result;
@@ -1626,9 +1668,7 @@ same command to refresh:
       if (actionParam) {
         $.extend(payLoad, actionParam);
       }
-      if (self.isDebug) {
-        self.log(JSON.stringify(payLoad));
-      }
+      self.trackAction(actionParam);
       canRefresh = lastRefreshTime <= 0 || ((new Date).getTime() / 1000 - lastRefreshTime) >= self.minSecondBetweenRefresh;
       if (forceRefresh || canRefresh) {
         lastRefreshTime = (new Date()).getTime() / 1000;
@@ -1695,6 +1735,16 @@ same command to refresh:
       self = this;
       return $.extend(self.defaultActionParam, defaultParam);
     },
+    refreshWithTimer: function(actionParam) {
+      var self, timer;
+      self = myGsn.Advertising;
+      self.refresh(actionParam, true);
+      timer = (self.timer || 0) * 1000;
+      if (timer > 0) {
+        setTimeout(self.refreshWithTimer, timer);
+      }
+      return self;
+    },
     load: function(gsnid, isDebug) {
       var self;
       self = myGsn.Advertising;
@@ -1704,8 +1754,9 @@ same command to refresh:
           self.isDebug = isDebug;
         }
       }
-      self.refresh(null, true);
-      return self;
+      return self.refreshWithTimer({
+        evtname: 'adload'
+      });
     }
   };
   myPlugin = new Plugin;
@@ -1846,6 +1897,12 @@ same command to refresh:
         return;
       }
       return aPlugin.disablesw = value !== "false";
+    },
+    timer: function(value) {
+      if (!value) {
+        return;
+      }
+      return aPlugin.timer = value;
     },
     selector: function(value) {
       if (typeof value !== "string") {

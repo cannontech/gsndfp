@@ -111,6 +111,24 @@
       evtvalue: 0
       # additional parameters TBD
     data: {}
+    translator:
+      page: 'pg'
+      evtname: 'ename'
+      dept: 'dpt'
+      deviceid: 'dvc'
+      storeid: 'str'
+      consumerid: 'cust'
+      isanon: 'isa'
+      loyaltyid: 'loy'
+      aisle: 'asl'
+      category: 'cat'
+      shelf: 'shf'
+      brand: 'brd'
+      pcode: 'pcd'
+      pdesc: 'pds'
+      latlng: 'latlng'
+      evtcategory: 'ecat'
+      evtvalue: 'eval'
     isDebug: false
     gsnid: 0
     selector: 'body'
@@ -130,6 +148,7 @@
       circPlus: false
       pods: false
     circPlusDept: undefined
+    timer: undefined
     trigger: (eventName, eventData) ->
       if eventName.indexOf('gsnevent') < 0
         eventName = 'gsnevent:' + eventName
@@ -155,17 +174,37 @@
         eventName = 'gsnevent:' + eventName
       $(doc).on eventName, callback
       return
+
     off: (eventName, callback) ->
       if eventName.indexOf('gsnevent') < 0
         eventName = 'gsnevent:' + eventName
       $(doc).off eventName, callback
       return
+
     log: (message) ->
-      if (console)
+      self = myGsn.Advertising
+      if (self.isDebug and console)
         console.log message
 
-      return this
+      return self
 
+    trackAction: (actionParam) ->
+      self = myGsn.Advertising
+
+      url = '//pi.gsngrocers.com/pi.gif?nc=' + (new Date()).getTime()
+      if (actionParam)
+        $.each actionParam, (idx, attr) ->
+          url += '&' + self.translator[idx] + '=' + encodeURI(attr)
+          return
+      $.ajax
+        async: false
+        url: url
+
+      if (JSON)
+        if (JSON.stringify)
+          self.log JSON.stringify actionParam
+
+      return self
     cleanKeyword: (keyword) ->
       result = keyword.replace(/[^a-zA-Z0-9]+/gi, '_').replace(/^[_]+/gi, '')
       if result.toLowerCase?
@@ -294,7 +333,7 @@
         $.extend payLoad, actionParam
 
       # track payLoad
-      if self.isDebug then self.log JSON.stringify payLoad
+      self.trackAction actionParam
       canRefresh = lastRefreshTime <= 0 || ( (new Date).getTime() / 1000 - lastRefreshTime) >= self.minSecondBetweenRefresh
 
       if (forceRefresh || canRefresh)
@@ -355,15 +394,22 @@
       self = this
       $.extend self.defaultActionParam, defaultParam
 
+    refreshWithTimer: (actionParam) ->
+      self = myGsn.Advertising
+      self.refresh(actionParam, true)
+      timer = (self.timer || 0) * 1000
+
+      if (timer > 0)
+        setTimeout self.refreshWithTimer, timer
+
+      return self
     load: (gsnid, isDebug) ->
       self = myGsn.Advertising
       if (gsnid)
         self.gsnid = gsnid
         self.isDebug = isDebug unless self.isDebug
 
-      self.refresh(null, true)
-
-      return self
+      return self.refreshWithTimer({ evtname: 'adload' })
 
   # #endregion
   # create the plugin and map function for backward compatibility
@@ -492,6 +538,9 @@
     disablesw: (value) ->
       return unless typeof value is "string"
       aPlugin.disablesw = value isnt "false"
+    timer: (value) ->
+      return unless value
+      aPlugin.timer = value
     selector: (value) ->
       return unless typeof value is "string"
       aPlugin.selector = value
