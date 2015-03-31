@@ -6,7 +6,7 @@ var webpack =    require('gulp-webpack');
 var rename =     require('gulp-rename');
 var coffee =     require('gulp-coffee');
 var concat =     require('gulp-concat');
-var clean =      require('gulp-clean');
+var del =        require('del');
 var bump =       require('gulp-bump');
 var header =     require('gulp-header');
                  require('gulp-grunt')(gulp);
@@ -30,8 +30,7 @@ gulp.task('bump_version', function(){
 });
 
 gulp.task('clean', function() {
-  return gulp.src('./dist/*')
-    .pipe(clean({force: true}));
+  del(['dist/*']);
 });
 
 gulp.task('coffee', function() {
@@ -62,7 +61,7 @@ gulp.task('SpecRunner.update', function(){
             ]),
 
 		dependencies   = gulp.src(names, {read: false});
-	
+
 	return gulp.src(target)
         .pipe(inject(dependencies, {relative : true}))
 		.pipe(gulp.dest('./test'));

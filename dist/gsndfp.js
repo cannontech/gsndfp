@@ -1,6 +1,6 @@
 /*!
  * gsndfp
- * version 1.1.4
+ * version 1.1.5
  * Requires jQuery 1.7.1 or higher
  * git@github.com:gsn/gsndfp.git
  * License: Grocery Shopping Network
@@ -1340,7 +1340,7 @@ same command to refresh:
 
 
 /* Usage:
- *   For Publisher: 
+ *   For Publisher:
  *         Gsn.Advertising.clickBrickOffer(clickTrackingUrl, 69);
 #
  *   For Consumer:
@@ -1615,7 +1615,7 @@ same command to refresh:
           payLoad[index.replace('gsn', '').toLowerCase()] = attr;
         }
       });
-      self.refreshAdPods(payLoad);
+      self.refres(payLoad);
       return self;
     },
     refreshAdPodsInternal: function(actionParam, forceRefresh) {
@@ -1704,7 +1704,7 @@ same command to refresh:
           self.isDebug = isDebug;
         }
       }
-      self.refreshAdPods(null, true);
+      self.refresh(null, true);
       return self;
     }
   };
@@ -1857,7 +1857,7 @@ same command to refresh:
   ref = document.getElementsByTagName("script");
   for (i = 0, len = ref.length; i < len; i++) {
     script = ref[i];
-    if (/gsndfp/.test(script.src)) {
+    if (/gsndfp/i.test(script.src)) {
       ref1 = ['', 'data-'];
       for (j = 0, len1 = ref1.length; j < len1; j++) {
         prefix = ref1[j];
